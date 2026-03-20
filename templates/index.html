@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f0f13;
+    --surface: #18181f;
+    --card:    #1e1e28;
+    --border:  #2a2a38;
+    --accent:  #7c6af7;
+    --accent2: #f97b6b;
+    --text:    #e8e6f0;
+    --muted:   #7a7890;
+    --success: #4ade80;
+    --danger:  #f87171;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--accent); letter-spacing: .5px; }
+  .logo span { color: var(--accent2); }
+
+  /* ── Layout ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+  /* ── Stats ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+  .stat-label { font-size: .72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--text); }
+  .stat-card:nth-child(1) .stat-value { color: var(--accent); }
+  .stat-card:nth-child(2) .stat-value { color: var(--accent2); }
+  .stat-card:nth-child(3) .stat-value { color: var(--success); }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: .6rem 1rem .6rem 2.4rem;
+    font-family: inherit;
+    font-size: .875rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-icon { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .85rem; }
+  select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: .6rem 1rem;
+    font-family: inherit;
+    font-size: .875rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .btn {
+    padding: .6rem 1.25rem;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .88; }
+  .btn-danger  { background: var(--danger); color: #fff; }
+  .btn-sm { padding: .35rem .75rem; font-size: .78rem; }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--surface);
+    color: var(--muted);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    font-weight: 500;
+    padding: .85rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: .875rem;
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(124,106,247,.05); }
+  .badge {
+    display: inline-block;
+    padding: .2rem .65rem;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 600;
+    background: rgba(124,106,247,.15);
+    color: var(--accent);
+  }
+  .grade-badge { background: rgba(74,222,128,.12); color: var(--success); }
+  .actions { display: flex; gap: .5rem; }
+
+  /* ── Modal ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 460px;
+    padding: 2rem;
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal h2 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; margin-bottom: 1.5rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+  .form-group { display: flex; flex-direction: column; gap: .35rem; }
+  .form-group.full { grid-column: 1/-1; }
+  label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  input, select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: .6rem .85rem;
+    font-family: inherit;
+    font-size: .875rem;
+    outline: none;
+    transition: border-color .2s;
+    width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  .modal-footer { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.5rem; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: .85rem 1.25rem;
+    font-size: .875rem;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all .3s ease;
+    z-index: 300;
+  }
+  #toast.show { transform: none; opacity: 1; }
+  #toast.error { border-left-color: var(--danger); }
+
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+  .empty-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .form-grid   { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Student<span>Manager</span></div>
+  <button class="btn btn-primary" onclick="openModal()">+ Add Student</button>
+</header>
+
+<div class="container">
+  <!-- Stats -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total Students</div><div class="stat-value" id="s-total">—</div></div>
+    <div class="stat-card"><div class="stat-label">Departments</div><div class="stat-value" id="s-dept">—</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Age</div><div class="stat-value" id="s-age">—</div></div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="search" type="text" placeholder="Search by name or email…" oninput="loadStudents()">
+    </div>
+    <select id="dept-filter" onchange="loadStudents()">
+      <option value="">All Departments</option>
+      <option>Computer Science</option>
+      <option>Electronics</option>
+      <option>Mechanical</option>
+      <option>Civil</option>
+      <option>Information Technology</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Age</th>
+          <th>Department</th><th>Grade</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeIfBackdrop(event)">
+  <div class="modal">
+    <h2 id="modal-title">Add Student</h2>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Full Name</label>
+        <input id="f-name" type="text" placeholder="e.g. Priya Sharma">
+      </div>
+      <div class="form-group full">
+        <label>Email</label>
+        <input id="f-email" type="email" placeholder="priya@college.edu">
+      </div>
+      <div class="form-group">
+        <label>Age</label>
+        <input id="f-age" type="number" min="15" max="35" placeholder="21">
+      </div>
+      <div class="form-group">
+        <label>Grade</label>
+        <select id="f-grade">
+          <option value="N/A">N/A</option>
+          <option>A+</option><option>A</option><option>B+</option>
+          <option>B</option><option>C</option><option>D</option><option>F</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Department</label>
+        <select id="f-dept">
+          <option value="">Select…</option>
+          <option>Computer Science</option>
+          <option>Electronics</option>
+          <option>Mechanical</option>
+          <option>Civil</option>
+          <option>Information Technology</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStudent()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let editId = null;
+
+  // ── Load students ──────────────────────────────────────────────────────
+  async function loadStudents() {
+    const q = document.getElementById("search").value;
+    const d = document.getElementById("dept-filter").value;
+    const r = await fetch(`/api/students?search=${encodeURIComponent(q)}&dept=${encodeURIComponent(d)}`);
+    const list = await r.json();
+    const tbody = document.getElementById("tbody");
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="empty-icon">📭</div>No students found</div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(s => `
+      <tr>
+        <td><strong>${s.name}</strong></td>
+        <td style="color:var(--muted)">${s.email}</td>
+        <td>${s.age}</td>
+        <td><span class="badge">${s.department}</span></td>
+        <td><span class="badge grade-badge">${s.grade}</span></td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-primary btn-sm" onclick="editStudent('${s._id}')">Edit</button>
+            <button class="btn btn-danger  btn-sm" onclick="deleteStudent('${s._id}','${s.name}')">Delete</button>
+          </div>
+        </td>
+      </tr>`).join("");
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────────────
+  async function loadStats() {
+    const r = await fetch("/api/stats");
+    const d = await r.json();
+    document.getElementById("s-total").textContent = d.total;
+    document.getElementById("s-dept").textContent  = d.departments;
+    document.getElementById("s-age").textContent   = d.avg_age || "—";
+  }
+
+  // ── Modal helpers ──────────────────────────────────────────────────────
+  function openModal(id) {
+    editId = id || null;
+    document.getElementById("modal-title").textContent = id ? "Edit Student" : "Add Student";
+    document.getElementById("overlay").classList.add("open");
+  }
+  function closeModal() {
+    document.getElementById("overlay").classList.remove("open");
+    ["f-name","f-email","f-age"].forEach(i => document.getElementById(i).value = "");
+    document.getElementById("f-dept").value  = "";
+    document.getElementById("f-grade").value = "N/A";
+    editId = null;
+  }
+  function closeIfBackdrop(e) { if (e.target.id === "overlay") closeModal(); }
+
+  // ── Save (create / update) ─────────────────────────────────────────────
+  async function saveStudent() {
+    const body = {
+      name:       document.getElementById("f-name").value.trim(),
+      email:      document.getElementById("f-email").value.trim(),
+      age:        document.getElementById("f-age").value,
+      department: document.getElementById("f-dept").value,
+      grade:      document.getElementById("f-grade").value,
+    };
+    const url    = editId ? `/api/students/${editId}` : "/api/students";
+    const method = editId ? "PUT" : "POST";
+    const r = await fetch(url, { method, headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error || "Error", true); return; }
+    toast(editId ? "Student updated ✓" : "Student added ✓");
+    closeModal(); loadStudents(); loadStats();
+  }
+
+  // ── Edit ───────────────────────────────────────────────────────────────
+  async function editStudent(id) {
+    const r = await fetch(`/api/students/${id}`);
+    const s = await r.json();
+    document.getElementById("f-name").value  = s.name;
+    document.getElementById("f-email").value = s.email;
+    document.getElementById("f-age").value   = s.age;
+    document.getElementById("f-dept").value  = s.department;
+    document.getElementById("f-grade").value = s.grade;
+    openModal(id);
+  }
+
+  // ── Delete ─────────────────────────────────────────────────────────────
+  async function deleteStudent(id, name) {
+    if (!confirm(`Delete "${name}"?`)) return;
+    const r = await fetch(`/api/students/${id}`, { method: "DELETE" });
+    const d = await r.json();
+    if (!r.ok) { toast(d.error, true); return; }
+    toast("Deleted successfully");
+    loadStudents(); loadStats();
+  }
+
+  // ── Toast ──────────────────────────────────────────────────────────────
+  function toast(msg, err = false) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className   = err ? "error" : "";
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 2800);
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  loadStudents(); loadStats();
+</script>
+</body>
+</html>
