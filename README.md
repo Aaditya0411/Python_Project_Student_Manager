@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 🎓 Student Manager — Flask + MongoDB Minor Project
 
 A full-stack web application to manage student records built with **Flask**, **PyMongo**, and **MongoDB**.
