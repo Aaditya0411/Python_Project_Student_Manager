@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎓 Student Manager — Flask + MongoDB Minor Project
 
 A full-stack web application to manage student records built with **Flask**, **PyMongo**, and **MongoDB**.
@@ -103,3 +104,6 @@ export MONGO_URI="mongodb+srv://user:pass@cluster.mongodb.net/"
 - ✅ Dashboard stats (total, departments, avg age)
 - ✅ Duplicate email detection
 - ✅ Clean dark-themed UI with toast notifications
+=======
+# Python_Project_Student_Manager
+>>>>>>> 58f77118f0b7cca95bc567b21df8383a847ca624
